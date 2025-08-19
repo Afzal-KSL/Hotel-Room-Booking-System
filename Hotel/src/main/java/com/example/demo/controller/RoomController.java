@@ -1,8 +1,13 @@
 package com.example.demo.controller;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,6 +42,32 @@ public class RoomController {
 	public ResponseEntity<RoomModel> getRoom(@PathVariable int id){
 		RoomModel room = service.getRoom(id);
 		return room != null ? ResponseEntity.ok(room) : ResponseEntity.notFound().build();
+	}
+	
+	@GetMapping("/{roomId}/availability")
+	public ResponseEntity<?> checkRoomAvailability(
+	        @PathVariable int roomId,
+	        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkIn,
+	        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkOut) {
+	    
+	    try {
+	        RoomModel room = service.getRoom(roomId);
+	        if (room == null) {
+	            return ResponseEntity.notFound().build();
+	        }
+	        
+	        boolean isAvailable = service.checkRoomAvailabilityForDates(roomId, checkIn, checkOut);
+	        
+	        return ResponseEntity.ok(Map.of(
+	            "roomId", roomId,
+	            "available", isAvailable,
+	            "checkIn", checkIn,
+	            "checkOut", checkOut
+	        ));
+	    } catch (Exception e) {
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+	            .body(Map.of("error", "Error checking availability", "message", e.getMessage()));
+	    }
 	}
 	
 	@PostMapping(consumes = "multipart/form-data")

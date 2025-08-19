@@ -1,5 +1,6 @@
 package com.example.demo.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -32,9 +33,9 @@ public class RoomModel {
 	@NotNull(message = "Room number is required")
 	private int number;
 	
-	@NotNull(message = "Hotel is required")
 	@ManyToOne
 	@JoinColumn(name = "hotel_id")
+	@JsonBackReference
 	private HotelModel hotel;
 	
 	@NotBlank(message = "Room name is required")
